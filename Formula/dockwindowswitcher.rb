@@ -9,8 +9,8 @@
 class Dockwindowswitcher < Formula
   desc "Raise only an app's most recent window when its Dock icon is clicked"
   homepage "https://github.com/mihy0212/DockWindowSwitcher"
-  url "https://github.com/mihy0212/DockWindowSwitcher/archive/refs/tags/v0.1.0.tar.gz"
-  sha256 "18071e6b12fd09237600f1d66287e12080d27701ec2686ccb2dfe4a30c06dcbd"
+  url "https://github.com/mihy0212/DockWindowSwitcher/archive/refs/tags/v0.1.1.tar.gz"
+  sha256 "4a24d82086bd2a7b47aa2a74946d06c0a8e6552c57dc21b34b5acfea9c95a7f9"
   license "MIT"
   head "https://github.com/mihy0212/DockWindowSwitcher.git", branch: "main"
 
