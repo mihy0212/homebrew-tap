@@ -9,8 +9,8 @@
 class Dockwindowswitcher < Formula
   desc "Raise only an app's most recent window when its Dock icon is clicked"
   homepage "https://github.com/mihy0212/DockWindowSwitcher"
-  url "https://github.com/mihy0212/DockWindowSwitcher/archive/refs/tags/v0.1.1.tar.gz"
-  sha256 "4a24d82086bd2a7b47aa2a74946d06c0a8e6552c57dc21b34b5acfea9c95a7f9"
+  url "https://github.com/mihy0212/DockWindowSwitcher/archive/refs/tags/v0.1.2.tar.gz"
+  sha256 "46f639e365bcbe5ebd3fbc52ef4328878fd942c08bfacb3cd4df5a6aa0bc2781"
   license "MIT"
   head "https://github.com/mihy0212/DockWindowSwitcher.git", branch: "main"
 
@@ -24,17 +24,36 @@ class Dockwindowswitcher < Formula
   end
 
   def post_install
+    applications = Pathname.new("/Applications")
+    link = applications/"DockWindowSwitcher.app"
+    target = prefix/"DockWindowSwitcher.app"
+
     # Homebrew keeps the bundle inside its prefix, which is awkward to reach
     # from the Accessibility file picker. A link in /Applications makes the
     # app behave like any other install. Best effort: skip it silently if the
     # directory is not writable.
-    link = Pathname.new("/Applications/DockWindowSwitcher.app")
-    target = prefix/"DockWindowSwitcher.app"
+    return unless applications.writable?
 
-    return unless Pathname.new("/Applications").writable?
+    if link.symlink?
+      link.unlink
+    elsif link.exist?
+      # A real bundle is sitting there, put by install.sh or copied by hand.
+      # It would shadow this install, because /Applications is what people
+      # launch, so brew upgrade would keep refreshing a copy nobody runs.
+      # Leave someone else's file alone and say so rather than delete it.
+      opoo <<~EOS
+        /Applications/DockWindowSwitcher.app already exists and is not a
+        Homebrew symlink, so it was left alone. That copy is what will
+        launch, not this one.
 
-    link.unlink if link.symlink?
-    link.make_symlink(target) unless link.exist?
+        To hand control to Homebrew:
+          rm -rf /Applications/DockWindowSwitcher.app
+          brew reinstall dockwindowswitcher
+      EOS
+      return
+    end
+
+    link.make_symlink(target)
   end
 
   def caveats
@@ -53,8 +72,13 @@ class Dockwindowswitcher < Formula
       an upgrade remove DockWindowSwitcher from the Accessibility list with
       [-] and add it again with [+].
 
-      Uninstalling leaves the /Applications symlink behind:
-        rm /Applications/DockWindowSwitcher.app
+      To uninstall completely, first turn off "Launch at Login" in the menu
+      bar, then:
+        brew uninstall dockwindowswitcher
+        rm -f /Applications/DockWindowSwitcher.app
+
+      The Accessibility entry is not removed automatically; take it out of
+      the list with [-].
     EOS
   end
 
